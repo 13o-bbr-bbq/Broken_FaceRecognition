@@ -7,7 +7,7 @@ TBA
  <img src="./img/auth_sample.jpg" width="500">
 
 ## Installation
- 1. git clone Broken FC's repository.  
+ 1. git clone Broken FR's repository.  
  ```
  root@kali:~# git clone https://github.com/13o-bbr-bbq/Broken_FaceRecognition.git
  ```
