@@ -120,9 +120,9 @@ finetuning.h5
 
 ## Operation check environment
  * Hardware  
-   * OS: Windows 10 64bit  
+   * OS: Windows 10 Home 64bit  
    * CPU: Intel(R) Core(TM) i7-6500U 2.50GHz  
-   * GPU: NVIDIA GeForce m975  
+   * GPU: GeForce GTX 965M  
    * Memory: 16.0GB  
  * Software  
    * Python 3.6.1
