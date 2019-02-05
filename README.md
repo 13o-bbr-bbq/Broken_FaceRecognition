@@ -26,8 +26,10 @@ TBA
 
  4. Download default trained model.
  ```
- root@kali:~/Broken_FaceRecognition# wget "https://drive.google.com/uc?export=download&id=14UUBAkpf3FJ0KW_awotEkGZelqrH13M1" -O model.tar.gz
- ```
+ root@kali:~/Broken_FaceRecognition# wget "https://drive.google.com/uc?export=download&id=14UUBAkpf3FJ0KW_awotEkGZelqrH13M1" -O model.zip
+ root@kali:~/Broken_FaceRecognition# unzip model.zip
+ root@kali:~/Broken_FaceRecognition# mv finetuning.h5 dataset/model
+```
 
 ## Usage
 ```
