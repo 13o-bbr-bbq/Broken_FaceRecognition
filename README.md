@@ -46,16 +46,16 @@ options:
     -h --help     Show this help message and exit.
 ```
 
-If you don't indicate option, this system is operated "face recognition" mode (Please refer #1).  
+When you don't indicate option, this system is operated "**face recognition mode**" (Please refer #1).  
 
 ### 1. Face recognition (No option).
 ```
-PS C:\Broken_FaceRecognition> python3 broken_face_recognition.py
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py
 ```
 
 <img src="./img/auth_sample.jpg" width="200">
 
-When the recognition rate exceeds the threshold value, the string "Unlock" is displayed on the window.  
+When the **recognition rate exceeds the threshold value**, the string "**Unlock**" is displayed on the window.  
 
 |Note|
 |:---|
@@ -63,7 +63,7 @@ When the recognition rate exceeds the threshold value, the string "Unlock" is di
 
 ### 2. Gather your face images. 
 ```
-PS C:\Broken_FaceRecognition> python3 broken_face_recognition.py -g "Any label name"
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py -g "Any label name"
 ```
 
 This system captures your faces using equiped camera of your PC per `cap_wait_time` (ms).  
@@ -90,7 +90,7 @@ captured_face_3.jpg
 
 ### 3. Create dataset.
 ```
-PS C:\Broken_FaceRecognition> python3 broken_face_recognition.py -c
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py -c
 ```
 
 This system create train data and test data from numerous face images under the `original_image` directory.  
@@ -104,7 +104,7 @@ test
 
 ### 4. Train face recognition model.
 ```
-PS C:\Broken_FaceRecognition> python3 broken_face_recognition.py -t
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py -t
 ```
 
 This system learns the features of numerous face images using trainning data.  
