@@ -100,6 +100,17 @@ test
 babaroa@ubuntu:~/Broken_FaceRecognition$ python3 broken_face_recognition.py -t
 ```
 
+This system learns the features of numerous face images using trainning data.  
+And, the learned result is stored on the `model` directory under the `dataset`.  
+
+```
+babaroa@ubuntu:~/Broken_FaceRecogn/dataset/model$ ls
+finetuning.h5
+```
+
+|Note|
+|:---|
+|If you want to change the model name, please edit `model_name` in the `config.ini`.|
 
 ## Operation check environment
  * Hardware  
