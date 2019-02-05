@@ -77,6 +77,9 @@ captured_face_3.jpg
 ... snip ...
 ```
 
+ * Examples of captured face images.  
+ <img src="./img/captured_faces.png" width="600">
+
 |Note|
 |:---|
 |`Any label name` will be label name for face recognition. Please indicate label name that you can recognize.|
