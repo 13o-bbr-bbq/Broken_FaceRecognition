@@ -48,7 +48,7 @@ options:
 
 When you don't indicate option, this system is operated "**face recognition mode**" (Please refer #1).  
 
-### 1. Face recognition (No option).
+### How to use vulnrable face recognition system.
 ```
 PS C:\Broken_FaceRecognition> python broken_face_recognition.py
 ```
@@ -61,7 +61,8 @@ When the **recognition rate exceeds the threshold value**, the string "**Unlock*
 |:---|
 |If you want to change the threshold value, please edit `threshold` value in the `config.ini`.|
 
-### 2. Gather your face images. 
+### How to register new face images to the system.  
+#### 1. Gather your face images. 
 ```
 PS C:\Broken_FaceRecognition> python broken_face_recognition.py -g "Any label name"
 ```
@@ -88,7 +89,7 @@ captured_face_3.jpg
 |:---|
 |If you want to change the `cap_wait_time` and sampling numbers of face, please edit `cap_wait_time` value and `gather_samples` value in the `config.ini`.|
 
-### 3. Create dataset.
+#### 2. Create dataset.
 ```
 PS C:\Broken_FaceRecognition> python broken_face_recognition.py -c
 ```
@@ -102,7 +103,7 @@ train
 test
 ```
 
-### 4. Train face recognition model.
+#### 3. Train face recognition model.
 ```
 PS C:\Broken_FaceRecognition> python broken_face_recognition.py -t
 ```
