@@ -24,6 +24,11 @@ TBA
  root@kali:~/Broken_FaceRecognition# pip3 install -r requirements.txt
  ```
 
+ 4. Download default trained model.
+ ```
+ root@kali:~/Broken_FaceRecognition# wget https://drive.google.com/file/d/17zLYf0RXFOg-Mx42c81rj0izVKY9-MY6/view?usp=sharing
+ ```
+
 ## Usage
 ```
 ./broken_face_recognition.py
