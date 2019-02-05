@@ -2,3 +2,4 @@ docopt==0.6.2
 Keras==2.2.4
 numpy==1.16.1
 opencv-python==4.0.0.21
+tensorflow==1.8.0

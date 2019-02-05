@@ -18,12 +18,12 @@ NONE = 'none'     # No label.
 # Define command option.
 __doc__ = """{f}
 usage:
-    {f} [-t] [-g <label_name>] [-c]
+    {f} [-g <label_name>] [-c] [-t]
     {f} -h | --help
 options:
+    -g   Optional : Gather your face images.
+    -c   Optional : Create dataset that train and test.
     -t   Optional : Train face recognition model.
-    -g   Optional : Get registration data you want.
-    -c   Optional : Cteate dataset.
     -h --help     Show this help message and exit.
 """.format(f=__file__)
 
@@ -33,13 +33,13 @@ def command_parse(utility):
     utility.write_log(20, '[In] Parse command options [{}].'.format(os.path.basename(__file__)))
 
     args = docopt(__doc__)
-    opt_train = args['-t']
     opt_gather = args['-g']
     opt_label_name = args['<label_name>']
     opt_create = args['-c']
+    opt_train = args['-t']
 
     utility.write_log(20, '[Out] Parse command options [{}].'.format(os.path.basename(__file__)))
-    return opt_train, opt_gather, opt_label_name, opt_create
+    return opt_gather, opt_label_name, opt_create, opt_train
 
 
 if __name__ == '__main__':
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     utility.write_log(20, '[In] Broken Face recognition [{}].'.format(file_name))
 
     # Get command arguments.
-    opt_train, opt_gather, opt_label_name, opt_create = command_parse(utility)
+    opt_gather, opt_label_name, opt_create, opt_train = command_parse(utility)
 
     # Read config.ini.
     config = configparser.ConfigParser()
@@ -133,8 +133,8 @@ if __name__ == '__main__':
                 cv2.putText(image, msg, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.imshow('Face Authorization', image)
 
-                file_name = os.path.join(preparation.dataset_path, 'tmp_face' + str(idx) + '_.jpg')
-                cv2.imwrite(file_name, image)
+                # file_name = os.path.join(preparation.dataset_path, 'tmp_face' + str(idx) + '_.jpg')
+                # cv2.imwrite(file_name, image)
 
             # Waiting for getting key input.
             k = cv2.waitKey(500)
