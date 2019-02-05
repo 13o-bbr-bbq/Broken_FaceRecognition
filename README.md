@@ -14,25 +14,19 @@
  PS C:> git clone https://github.com/13o-bbr-bbq/Broken_FaceRecognition.git
  ```
 
- 2. Get Python3-pip.  
- ```
- PS C:> apt-get update
- PS C:> apt-get install python3-pip
- ```
-
- 3. Install required python's package.  
+ 2. Install required python's package.  
  ```
  PS C:> cd Broken_FaceRecognition
- PS C:\Broken_FaceRecognition> pip3 install -r requirements.txt
+ PS C:\Broken_FaceRecognition> pip install -r requirements.txt
  ```
 
- 4. Download default trained model.  
+ 3. Download default trained model.  
  If you want to use the default model, please download it.  
  ```
- PS C:\Broken_FaceRecognition> wget "https://drive.google.com/uc?export=download&id=14UUBAkpf3FJ0KW_awotEkGZelqrH13M1" -O model.zip
- PS C:\Broken_FaceRecognition> unzip model.zip
- PS C:\Broken_FaceRecognition> mv finetuning.h5 dataset/model/
- PS C:\Broken_FaceRecognition> rm model.zip
+ PS C:\Broken_FaceRecognition> Invoke-WebRequest -Uri "https://drive.google.com/uc?export=download&id=1KACTt4c5yx5rl-6gKWfFGaAmgmzYQQf3" -OutFile .\model.zip
+ PS C:\Broken_FaceRecognition> Expand-Archive -Path .\model.zip -DestinationPath .\
+ PS C:\Broken_FaceRecognition> mv .\finetuning.h5 .\dataset\model\
+ PS C:\Broken_FaceRecognition> rm .\model.zip
 ```
 
 The default model has learned some faces of [VGGFACE2](http://zeus.robots.ox.ac.uk/vgg_face2/) and my faces.  
