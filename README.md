@@ -81,6 +81,10 @@ captured_face_3.jpg
 
 |Note|
 |:---|
+|`Any label name` will be label name for face recognition. Please indicate label name that you can recognize.|
+
+|Note|
+|:---|
 |If you want to change the `cap_wait_time` and sampling numbers of face, please edit `cap_wait_time` value and `gather_samples` value in the `config.ini`.|
 
 ### 3. Create dataset.
