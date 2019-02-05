@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
 import configparser
 import cv2
 from docopt import docopt
 from util import Utilty
+from prepare import Preparation
 from predict import Recognition
 
 # Type of printing.
@@ -18,12 +18,12 @@ NONE = 'none'     # No label.
 # Define command option.
 __doc__ = """{f}
 usage:
-    {f} [-t] [-g <label_name>] [-p]
+    {f} [-t] [-g <label_name>] [-c]
     {f} -h | --help
 options:
     -t   Optional : Train face recognition model.
     -g   Optional : Get registration data you want.
-    -p   Optional : Prepare dataset.
+    -c   Optional : Cteate dataset.
     -h --help     Show this help message and exit.
 """.format(f=__file__)
 
@@ -34,12 +34,12 @@ def command_parse(utility):
 
     args = docopt(__doc__)
     opt_train = args['-t']
-    opt_get = args['-g']
+    opt_gather = args['-g']
     opt_label_name = args['<label_name>']
-    opt_prepare = args['-p']
+    opt_create = args['-c']
 
     utility.write_log(20, '[Out] Parse command options [{}].'.format(os.path.basename(__file__)))
-    return opt_train, opt_get, opt_label_name, opt_prepare
+    return opt_train, opt_gather, opt_label_name, opt_create
 
 
 if __name__ == '__main__':
@@ -50,99 +50,66 @@ if __name__ == '__main__':
     utility.write_log(20, '[In] Broken Face recognition [{}].'.format(file_name))
 
     # Get command arguments.
-    opt_train, opt_get, opt_label_name, opt_prepare = command_parse(utility)
+    opt_train, opt_gather, opt_label_name, opt_create = command_parse(utility)
 
     # Read config.ini.
     config = configparser.ConfigParser()
     config.read(os.path.join(full_path, 'config.ini'))
 
-    # Define path.
-    output_dir = os.path.join(full_path, config['Recognition']['dataset_path'])
-    haarcascade_dir = os.path.join(full_path, 'haarcascade')
-
-    # Getting sample number.
-    samples = int(config['CreateSample']['samples'])
-
     # Getting sample number.
     max_retry = int(config['Authorization']['max_retry'])
     threshold = float(config['Authorization']['threshold'])
 
-    # Create camera instance.
-    capture = None
-    try:
-        capture = cv2.VideoCapture(0)
-    except:
-        utility.print_message(FAIL, 'Camera is not found.')
-        sys.exit(1)
+    # Default label name.
+    default_label_name = config['Preparation']['default_label_name']
+
+    # Create instance.
+    preparation = Preparation(utility)
+    recognition = Recognition(utility)
 
     if opt_train:
         # Train model.
-        print('Train')
-        sys.exit(0)
-    elif opt_get:
-        # Get registration samples for model training.
-        for idx in range(samples):
-            # Read 1 frame from VideoCapture.
-            ret, image = capture.read()
+        recognition.execute_train()
+    elif opt_gather:
+        # Gather registration face images.
+        if opt_label_name == '':
+            opt_label_name = default_label_name
 
-            # Execute detecting face.
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            cascade = cv2.CascadeClassifier(os.path.join(haarcascade_dir, 'haarcascade_frontalface_default.xml'))
-            faces = cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=2, minSize=(64, 64))
-
-            if len(faces) == 0:
-                print('Face is not found.')
-                continue
-
-            for face in faces:
-                # Extract face information.
-                x, y, width, height = face
-                register_image = image[y:y + height, x:x + width]
-                if register_image.shape[0] < 64:
-                    continue
-                register_image = cv2.resize(register_image, (64, 64))
-
-                # Display raw frame data.
-                cv2.imshow('Register face image.', register_image)
-
-                # Save image.
-                file_name = os.path.join(output_dir, opt_label_name + '_' + str(idx) + '.jpg')
-                cv2.imwrite(file_name, register_image)
-
-            # Waiting for getting key input.
-            k = cv2.waitKey(500)
-            if k == 27:
-                break
-    elif opt_prepare:
-        # Prepare dataset for training model.
-        print('Prepare')
+        capture = preparation.create_camera_instance()
+        preparation.gather_your_face(capture, opt_label_name)
+    elif opt_create:
+        # Create dataset.
+        preparation.create_dataset()
     else:
         # Execute face recognition.
-        recognition = Recognition(utility)
         model = recognition.prepare_test()
+        capture = preparation.create_camera_instance()
         for idx in range(max_retry):
             # Read 1 frame from VideoCapture.
             ret, image = capture.read()
 
             # Execute detecting face.
             gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            cascade = cv2.CascadeClassifier(os.path.join(haarcascade_dir, 'haarcascade_frontalface_default.xml'))
-            faces = cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=2, minSize=(64, 64))
+            cascade = cv2.CascadeClassifier(preparation.haarcascade_path)
+            faces = cascade.detectMultiScale(gray_image,
+                                             scaleFactor=1.1,
+                                             minNeighbors=2,
+                                             minSize=(preparation.pixel_size, preparation.pixel_size))
 
             if len(faces) == 0:
-                print('Face is not found.')
+                utility.print_message(WARNING, 'Face is not found.')
                 continue
 
             for face in faces:
                 # Extract face information.
                 x, y, width, height = face
                 predict_image = image[y:y + height, x:x + width]
-                if predict_image.shape[0] < 64:
+                if predict_image.shape[0] < preparation.pixel_size:
                     continue
-                predict_image = cv2.resize(predict_image, (64, 64))
+                predict_image = cv2.resize(predict_image, (preparation.pixel_size, preparation.pixel_size))
 
                 # Save image.
-                file_name = os.path.join(output_dir, 'tmp_face.jpg')
+                file_name = os.path.join(preparation.dataset_path, 'tmp_face.jpg')
                 cv2.imwrite(file_name, predict_image)
 
                 # Predict face.
@@ -166,14 +133,14 @@ if __name__ == '__main__':
                 cv2.putText(image, msg, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.imshow('Face Authorization', image)
 
-                #file_name = os.path.join(output_dir, 'tmp_face' + str(idx) + '_.jpg')
-                #cv2.imwrite(file_name, image)
+                file_name = os.path.join(preparation.dataset_path, 'tmp_face' + str(idx) + '_.jpg')
+                cv2.imwrite(file_name, image)
 
             # Waiting for getting key input.
             k = cv2.waitKey(500)
             if k == 27:
                 break
 
-    # Termination (release capture and close window).
-    capture.release()
-    cv2.destroyAllWindows()
+        # Termination (release capture and close window).
+        capture.release()
+        cv2.destroyAllWindows()
