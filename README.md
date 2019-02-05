@@ -5,7 +5,7 @@
  <img src="./img/auth_sample.jpg" width="400">
 
  * This system is **vulnerable against adversarial example**.  
- * By using this system you can attempt **adversarial example similar real face recognition**.  
+ * By using this system, you can attempt **adversarial examples just like real face recognition systems**.  
  * You can **develop face recognition system only you**.  
 
 ## Installation
