@@ -35,8 +35,9 @@
  PS C:\Broken_FaceRecognition> rm model.zip
 ```
 
-The default model has learned below faces.  
-<img src="./img/default_model.png" width="200">  
+The default model has learned some faces of [VGGFACE2](http://zeus.robots.ox.ac.uk/vgg_face2/) and my faces.  
+
+<img src="./img/default_model.png" width="600">  
 
 ## Usage
 ```
