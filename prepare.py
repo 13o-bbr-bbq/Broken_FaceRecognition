@@ -93,6 +93,7 @@ class Preparation:
             os.mkdir(save_path)
         for idx in range(self.sample_num):
             # Read 1 frame from VideoCapture.
+            self.utility.print_message(OK, '{}/{} Capturing face image.'.format(idx + 1, self.sample_num))
             ret, image = capture.read()
 
             # Execute detecting face.
@@ -110,10 +111,15 @@ class Preparation:
             for face in faces:
                 # Extract face information.
                 x, y, width, height = face
-                register_image = image[y:y + height, x:x + width]
-                if register_image.shape[0] < self.pixel_size:
+                face_size = image[y:y + height, x:x + width]
+                if face_size.shape[0] < self.pixel_size:
+                    msg = 'This face is too small: {} pixel.'.format(str(face_size.shape[0]))
+                    self.utility.print_message(WARNING, msg)
                     continue
-                register_image = cv2.resize(register_image, (self.pixel_size, self.pixel_size))
+
+                # Save image.
+                file_name = os.path.join(save_path, label_name + '_' + str(idx) + '.jpg')
+                cv2.imwrite(file_name, image)
 
                 # Display raw frame data.
                 cv2.rectangle(image,
@@ -123,18 +129,18 @@ class Preparation:
                               thickness=2)
 
                 # Display raw frame data.
-                cv2.putText(image, 'Capture.', (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                msg = 'Captured {}/{}.'.format(idx + 1, self.sample_num)
+                cv2.putText(image, msg, (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 cv2.imshow('Captured your face', image)
-
-                # Save image.
-                file_name = os.path.join(save_path, label_name + '_' + str(idx) + '.jpg')
-                cv2.imwrite(file_name, register_image)
 
             # Waiting for getting key input.
             k = cv2.waitKey(self.cap_wait_time)
             if k == 27:
                 break
 
+        # Termination (release capture and close window).
+        capture.release()
+        cv2.destroyAllWindows()
         self.utility.print_message(NOTE, 'Finish gathering your face images.')
 
     # Create dataset.
@@ -174,6 +180,8 @@ class Preparation:
                     x, y, width, height = face
                     save_image = cv_image[y:y+height, x:x+width]
                     if save_image.shape[0] < self.pixel_size:
+                        msg = 'This face is too small: {} pixel.'.format(str(save_image.shape[0]))
+                        self.utility.print_message(WARNING, msg)
                         continue
                     save_image = cv2.resize(save_image, (self.pixel_size, self.pixel_size))
 
