@@ -26,7 +26,7 @@ TBA
 
  4. Download default trained model.
  ```
- root@kali:~/Broken_FaceRecognition# wget https://drive.google.com/file/d/17zLYf0RXFOg-Mx42c81rj0izVKY9-MY6/view?usp=sharing
+ root@kali:~/Broken_FaceRecognition# wget https://1drv.ms/u/s!ADwB2s-wtacy7zM
  ```
 
 ## Usage
