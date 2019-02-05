@@ -2,9 +2,11 @@
 **The system is broken face recognition for adversarial example testing.**
 
 ## Overview
-TBA
+ <img src="./img/auth_sample.jpg" width="400">
 
- <img src="./img/auth_sample.jpg" width="500">
+ * This system is **vulnerable against adversarial example**.  
+ * By using this system you can attempt **adversarial example similar real face recognition**.  
+ * You can **develop face recognition system only you**.  
 
 ## Installation
  1. git clone Broken FR's repository.  
