@@ -20,7 +20,7 @@
  PS C:\Broken_FaceRecognition> pip install -r requirements.txt
  ```
 
- 3. Download default trained model.  
+ 3. Download **default trained model**.  
  If you want to use the default model, please download it.  
  ```
  PS C:\Broken_FaceRecognition> Invoke-WebRequest -Uri "https://drive.google.com/uc?export=download&id=1KACTt4c5yx5rl-6gKWfFGaAmgmzYQQf3" -OutFile .\model.zip
@@ -29,7 +29,7 @@
  PS C:\Broken_FaceRecognition> rm .\model.zip
 ```
 
-The default model has learned some faces of [VGGFACE2](http://zeus.robots.ox.ac.uk/vgg_face2/) and my faces.  
+The **default model** has learned some faces of **[VGGFACE2](http://zeus.robots.ox.ac.uk/vgg_face2/)** and **my faces**.  
 
 <img src="./img/default_model.png" width="600">  
 
@@ -132,6 +132,7 @@ finetuning.h5
    * Keras==2.2.4
    * numpy==1.16.1
    * opencv-python==4.0.0.21
+   * pycrypto==2.6.1  
    * tensorflow==1.8.0
 
 ## License
