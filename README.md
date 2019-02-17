@@ -37,12 +37,13 @@ The **default model** has learned some faces of **[VGGFACE2](http://zeus.robots.
 ```
 ./broken_face_recognition.py
 usage:
-    ./broken_face_recognition.py [-g <label_name>] [-c] [-t]
+    ./broken_face_recognition.py [-g <label_name>] [-c] [-t] [-a]
     ./broken_face_recognition.py -h | --help
 options:
     -g   Optional : Gather your face images.
     -c   Optional : Create dataset that train and test.
     -t   Optional : Train face recognition model.
+    -a   Optional : Adversarial Examples test.
     -h --help     Show this help message and exit.
 ```
 
@@ -119,6 +120,38 @@ finetuning.h5
 |Note|
 |:---|
 |If you want to change the model name, please edit `model_name` in the `config.ini`.|
+
+### How to create Adversarial Examples.  
+```
+PS C:\Broken_FaceRecognition> python create_ae.py "original image path"
+```
+
+This mode'll create Adversarial Examples based on original image.  
+The created adversarial examplesThe is placed `adversarial_examples` directory.  
+
+```
+PS C:\Broken_FaceRecognition> ls .\adversarial_examples\
+
+
+    Directory: C:\Broken_FaceRecognition\adversarial_examples
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       2019/02/17     18:14          49564 adv_0_Stephen-Chow.jpg
+-a----       2019/02/17     18:14          49703 adv_100_Stephen-Chow.jpg
+-a----       2019/02/17     18:14          49777 adv_101_Stephen-Chow.jpg
+-a----       2019/02/17     18:14          49198 adv_102_Stephen-Chow.jpg
+
+...snip...
+```
+
+### How to test Adversarial Examples.  
+```
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py -a
+```
+
+This mode'll execute test of Adversarial Examples using examples in the `adversarial_examples` directory.  
 
 ## Operation check environment
  * Hardware  
