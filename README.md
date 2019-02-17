@@ -127,7 +127,7 @@ PS C:\Broken_FaceRecognition> python create_ae.py "original image path"
 ```
 
 This mode'll create Adversarial Examples based on original image.  
-The created adversarial examplesThe is placed `adversarial_examples` directory.  
+The created adversarial examples is placed `adversarial_examples` directory.  
 
 ```
 PS C:\Broken_FaceRecognition> ls .\adversarial_examples\
