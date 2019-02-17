@@ -7,17 +7,17 @@ import copy
 import cv2
 
 
-# ランダム選択したピクセルに細工を加える
+# Perturbations.
 def random_adv(image, face, p):
     # Extract face information.
     x, y, width, height = face
 
     for _ in range(p):
-        # 細工するピクセルをランダムに選択
+        # Randomly select.
         target_x = random.randint(x, width - 1)
         target_y = random.randint(y, height - 1)
 
-        # ピクセル値の細工
+        # Perturbations of selected pixel.
         target_pixel = image[target_y, target_x]
         average = sum(target_pixel) / len(target_pixel)
 
@@ -32,9 +32,9 @@ def random_adv(image, face, p):
 if __name__ == "__main__":
     full_path = os.path.dirname(os.path.abspath(__file__))
 
-    # Setting 細工するピクセル数(p)、1画像たりの細工試行最大回数(p_max_num)
-    p = 1500
-    p_max_num = 500
+    # Perturbations pixel number and maximum trial number.
+    pixel_num = 1500
+    perturbation_max_num = 100
 
     if len(sys.argv) != 2:
         sys.exit(1)
@@ -58,10 +58,10 @@ if __name__ == "__main__":
         out_path = os.path.join(full_path, 'adversarial_examples')
 
         for face in faces:
-            # 細工処理
-            for idx, count in enumerate(range(p_max_num)):
+            # Perturbations.
+            for idx, count in enumerate(range(perturbation_max_num)):
                 copy_image = copy.deepcopy(image)
-                adv_image = random_adv(copy_image, face, p)
+                adv_image = random_adv(copy_image, face, pixel_num)
 
                 # Save Adversarial Examples.
                 save_path = os.path.join(out_path, 'adv_' + str(idx) + '_' + sys.argv[1])
