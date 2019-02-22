@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from keras.applications.vgg16 import VGG16
 from keras.models import Sequential, Model
 from keras.layers import Input, Dropout, Flatten, Dense
-from keras.applications.resnet50 import preprocess_input
 from keras.preprocessing import image
 from foolbox.criteria import TargetClassProbability
 from util import Utilty
@@ -137,6 +136,7 @@ if __name__ == "__main__":
 
     # Load target image.
     target_image = sys.argv[1]
+    utility.print_message(OK, 'Load original image: {}'.format(target_image))
     predict_image = image.load_img(target_image, target_size=(adv.pixel_size, adv.pixel_size))
     origin_image = image.img_to_array(predict_image)
 
@@ -145,6 +145,7 @@ if __name__ == "__main__":
     criterion = TargetClassProbability(target_class, p=0.95)
 
     # Run the attack.
+    utility.print_message(OK, 'Run the attack: target={}.{}'.format(target_class, adv.classes[target_class]))
     attack = foolbox.attacks.LBFGSAttack(model=fmodel, criterion=criterion)
     adversarial = attack(origin_image, label=target_class)
 
@@ -155,9 +156,11 @@ if __name__ == "__main__":
     pred = kmodel.predict(copy_image)[0]
     top_indices = pred.argsort()[-1:][::-1]
     results = [(adv.classes[i], pred[i]) for i in top_indices]
-    print(np.argmax(fmodel.predictions(adversarial)))
-    print(foolbox.utils.softmax(fmodel.predictions(adversarial))[4])
+    pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
+    pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[4]
+    utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label, pred_prob * 100))
 
+    utility.print_message(OK, 'Show the images.')
     plt.figure()
     plt.subplot(1, 3, 1)
     plt.title('Original')
@@ -166,11 +169,11 @@ if __name__ == "__main__":
     plt.subplot(1, 3, 2)
     plt.title('Adversarial')
     plt.imshow(adversarial / 255)
-    plt.imsave('adv_example.png', adversarial[:, :, ::-1] / 255)
+    plt.imsave('adv_example.png', adversarial / 255)
 
     plt.subplot(1, 3, 3)
     plt.title('Difference')
-    difference = adversarial[:, :, ::-1] - origin_image
+    difference = adversarial - origin_image
     plt.imshow(difference / abs(difference).max() * 0.2 + 0.5)
 
     plt.show()
