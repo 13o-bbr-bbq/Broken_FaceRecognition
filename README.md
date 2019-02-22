@@ -162,7 +162,9 @@ This mode'll execute test of Adversarial Examples using examples in the `adversa
  * Software  
    * Python 3.6.8
    * docopt==0.6.2
+   * foolbox==1.8.0
    * Keras==2.2.4
+   * matplotlib==2.0.2
    * numpy==1.16.1
    * opencv-python==4.0.0.21
    * pycrypto==2.6.1  
