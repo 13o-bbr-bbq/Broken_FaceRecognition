@@ -60,6 +60,10 @@ class Adversarial:
             # Define haarcascade path.
             haarcascade_dir = os.path.join(self.full_path, config['Preparation']['haarcascade_path'])
             self.haarcascade_path = os.path.join(haarcascade_dir, 'haarcascade_frontalface_default.xml')
+
+            # Adversarial examples path.
+            self.adversarial_path = os.path.join(self.full_path, config['Adversarial']['adversarial_path'])
+            self.origin_image_path = os.path.join(self.full_path, config['Adversarial']['origin_adversarial'])
         except Exception as e:
             self.utility.print_message(FAIL, 'Reading config.ini is failure : {}'.format(e))
             sys.exit(1)
@@ -121,59 +125,76 @@ class Adversarial:
 
 # main
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print('Target image not found.')
-        sys.exit(1)
-
     utility = Utilty()
     adv = Adversarial(utility)
 
     # Instantiate model
     keras.backend.set_learning_phase(0)
     kmodel = adv.prepare_test()
-    preprocessing = (np.array([104, 116, 123]), 1)
-    fmodel = foolbox.models.KerasModel(kmodel, bounds=(0, 255), preprocessing=preprocessing)
+    # preprocessing = (np.array([104, 116, 123]), 1)
+    # fmodel = foolbox.models.KerasModel(kmodel, bounds=(0, 255), preprocessing=preprocessing)
+    fmodel = foolbox.models.KerasModel(kmodel, bounds=(0, 255))
 
-    # Load target image.
-    target_image = sys.argv[1]
-    utility.print_message(OK, 'Load original image: {}'.format(target_image))
-    predict_image = image.load_img(target_image, target_size=(adv.pixel_size, adv.pixel_size))
-    origin_image = image.img_to_array(predict_image)
+    # Generate adversarial examples.
+    target_list = os.listdir(adv.origin_image_path)
+    for label, target_origin_image in enumerate(target_list):
+        # Load target image.
+        utility.print_message(OK, '{}/{} Load original image: {} = {}'.format(label + 1,
+                                                                              len(target_list),
+                                                                              target_origin_image,
+                                                                              adv.classes[label]))
+        origin_image = image.img_to_array(image.load_img(os.path.join(adv.origin_image_path, target_origin_image),
+                                                         target_size=(adv.pixel_size, adv.pixel_size)))
 
-    # Specify the target label.
-    target_class = 4
-    criterion = TargetClassProbability(target_class, p=0.95)
+        # Specify the target label.
+        for idx2, target_class in enumerate(reversed(range(adv.nb_classes))):
+            # Run the attack.
+            criterion = TargetClassProbability(target_class, p=0.9)
+            utility.print_message(OK, 'Run the attack: target={}.{}'.format(target_class, adv.classes[target_class]))
+            attack = foolbox.attacks.LBFGSAttack(model=fmodel, criterion=criterion)
+            adversarial = attack(origin_image, label=label)
 
-    # Run the attack.
-    utility.print_message(OK, 'Run the attack: target={}.{}'.format(target_class, adv.classes[target_class]))
-    attack = foolbox.attacks.LBFGSAttack(model=fmodel, criterion=criterion)
-    adversarial = attack(origin_image, label=target_class)
+            # Prediction of default model.
+            '''
+            copy_image = copy.deepcopy(origin_image)
+            copy_image = np.expand_dims(copy_image, axis=0)
+            copy_image = copy_image / 255.0
+            pred = kmodel.predict(copy_image)[0]
+            top_indices = pred.argsort()[-1:][::-1]
+            results = [(adv.classes[i], pred[i]) for i in top_indices]
+            pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
+            pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[target_class]
+            utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label,
+                                                                                             pred_prob * 100))
+            '''
 
-    # Prediction of default model.
-    copy_image = copy.deepcopy(origin_image)
-    copy_image = np.expand_dims(copy_image, axis=0)
-    copy_image = copy_image / 255.0
-    pred = kmodel.predict(copy_image)[0]
-    top_indices = pred.argsort()[-1:][::-1]
-    results = [(adv.classes[i], pred[i]) for i in top_indices]
-    pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
-    pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[4]
-    utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label, pred_prob * 100))
+            # Save and show adversarial examples.
+            utility.print_message(OK, 'Show the images.')
+            plt.figure()
+            plt.subplot(1, 3, 1)
+            plt.title('Original')
+            plt.imshow(origin_image / 255)
 
-    utility.print_message(OK, 'Show the images.')
-    plt.figure()
-    plt.subplot(1, 3, 1)
-    plt.title('Original')
-    plt.imshow(origin_image / 255)
+            plt.subplot(1, 3, 2)
+            plt.title('Difference')
+            difference = adversarial - origin_image
+            plt.imshow(difference / abs(difference).max() * 0.2 + 0.5)
 
-    plt.subplot(1, 3, 2)
-    plt.title('Adversarial')
-    plt.imshow(adversarial / 255)
-    plt.imsave('adv_example.png', adversarial / 255)
+            plt.subplot(1, 3, 3)
+            plt.title('Adversarial')
+            plt.imshow(adversarial / 255)
 
-    plt.subplot(1, 3, 3)
-    plt.title('Difference')
-    difference = adversarial - origin_image
-    plt.imshow(difference / abs(difference).max() * 0.2 + 0.5)
+            # Save.
+            plt.imsave(os.path.join(adv.adversarial_path, 'Adversarial_{}-{}.jpg'.format(label, idx2)), adversarial / 255)
+            plt.savefig(os.path.join(adv.adversarial_path, 'Compare_{}-{}.jpg'.format(label, idx2)))
 
-    plt.show()
+            # Get result of prediction.
+            x = np.expand_dims(adversarial, axis=0)
+            pred = kmodel.predict(x / 255)[0]
+            top = 1
+            top_indices = pred.argsort()[-top:][::-1]
+            results = [(adv.classes[i], pred[i]) for i in top_indices]
+            pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
+            pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[target_class]
+            utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label,
+                                                                                             pred_prob * 100))
