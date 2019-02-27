@@ -158,36 +158,16 @@ class Preparation:
             for idx, image in enumerate(in_image):
                 # Read image to OpenCV.
                 cv_image = cv2.imread(image)
-                if cv_image is None:
-                    self.utility.print_message(WARNING, 'File not found: {}.'.format(image))
+
+                if cv_image.shape[0] < self.pixel_size:
+                    msg = 'This face is too small: {} pixel.'.format(str(cv_image.shape[0]))
+                    self.utility.print_message(WARNING, msg)
                     continue
+                save_image = cv2.resize(cv_image, (self.pixel_size, self.pixel_size))
 
-                # Execute detecting face.
-                self.utility.print_message(OK, '{}/{} Detecting face: {}'.format(idx + 1, len(in_image), image))
-                gray_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-                cascade = cv2.CascadeClassifier(self.haarcascade_path)
-                faces = cascade.detectMultiScale(gray_image,
-                                                 scaleFactor=1.1,
-                                                 minNeighbors=2,
-                                                 minSize=(self.pixel_size, self.pixel_size))
-
-                if len(faces) == 0:
-                    self.utility.print_message(WARNING, 'Face is not found: {}'.format(image))
-                    continue
-
-                # Extract any faces information.
-                for face_idx, face in enumerate(faces):
-                    x, y, width, height = face
-                    save_image = cv_image[y:y+height, x:x+width]
-                    if save_image.shape[0] < self.pixel_size:
-                        msg = 'This face is too small: {} pixel.'.format(str(save_image.shape[0]))
-                        self.utility.print_message(WARNING, msg)
-                        continue
-                    save_image = cv2.resize(save_image, (self.pixel_size, self.pixel_size))
-
-                    # Save image.
-                    file_name = os.path.join(self.dataset_path, label + '_' + str(idx) + '-' + str(face_idx) + '.jpg')
-                    cv2.imwrite(file_name, save_image)
+                # Save image.
+                file_name = os.path.join(self.dataset_path, label + '_' + str(idx) + '.jpg')
+                cv2.imwrite(file_name, save_image)
 
         # Separate images to train and test.
         for label in label_list:

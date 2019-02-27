@@ -67,7 +67,11 @@ if __name__ == '__main__':
 
     # Adversarial Examples path.
     adversarial_path = os.path.join(full_path, config['Adversarial']['adversarial_path'])
+    if os.path.exists(adversarial_path) is False:
+        os.mkdir(adversarial_path)
     adversarial_result = os.path.join(full_path, config['Adversarial']['result_path'])
+    if os.path.exists(adversarial_result) is False:
+        os.mkdir(adversarial_result)
 
     # Create instance.
     preparation = Preparation(utility)
@@ -94,60 +98,21 @@ if __name__ == '__main__':
             # Load adversarial example.
             image = cv2.imread(os.path.join(adversarial_path, adversarial_example), cv2.IMREAD_UNCHANGED)
 
-            # Execute detecting face.
-            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            cascade = cv2.CascadeClassifier(preparation.haarcascade_path)
-            faces = cascade.detectMultiScale(gray_image,
-                                             scaleFactor=1.1,
-                                             minNeighbors=2,
-                                             minSize=(preparation.pixel_size, preparation.pixel_size))
-
-            if len(faces) == 0:
-                utility.print_message(WARNING, 'Face is not found.')
+            if image.shape[0] < preparation.pixel_size:
                 continue
+            elif image.shape[0] > preparation.pixel_size:
+                image = cv2.resize(image, (preparation.pixel_size, preparation.pixel_size))
 
-            for face_idx, face in enumerate(faces):
-                # Extract face information.
-                x, y, width, height = face
-                predict_image = image[y:y + height, x:x + width]
-                if predict_image.shape[0] < preparation.pixel_size:
-                    continue
-                predict_image = cv2.resize(predict_image, (preparation.pixel_size, preparation.pixel_size))
+            # Save image.
+            file_name = os.path.join(adversarial_result, 'tmp_face.jpg')
+            cv2.imwrite(file_name, image)
 
-                # Save image.
-                file_name = os.path.join(adversarial_result, 'tmp_face.jpg')
-                cv2.imwrite(file_name, predict_image)
+            # Predict face.
+            results = recognition.execute_test(model, file_name)
 
-                # Predict face.
-                results = recognition.execute_test(model, file_name)
-
-                prob = results[0][1] * 100
-                msg = '{}/{} {} ({:.1f}%).'.format(idx + 1, len(target_list), results[0][0], prob)
-                utility.print_message(OK, msg)
-
-                # Draw frame to face.
-                cv2.rectangle(image,
-                              (x, y),
-                              (x + width, y + height),
-                              (255, 255, 255),
-                              thickness=2)
-
-                # Get current date.
-                date = utility.get_current_date('%Y%m%d%H%M%S%f')[:-3]
-                print_date = utility.transform_date_string(utility.transform_date_object(date[:-3], '%Y%m%d%H%M%S'))
-
-                # Display raw frame data.
-                cv2.putText(image, msg, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                cv2.putText(image, print_date, (10, 730), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-                cv2.imshow('Adversarial Example test.', image)
-
-                file_name = os.path.join(adversarial_result, 'tmp_face' + str(idx) + '-' + str(face_idx) + '.jpg')
-                cv2.imwrite(file_name, image)
-
-            # Waiting for getting key input.
-            k = cv2.waitKey(500)
-            if k == 27:
-                break
+            prob = results[0][1] * 100
+            msg = '{}/{} {} ({:.1f}%).'.format(idx + 1, len(target_list), results[0][0], prob)
+            utility.print_message(OK, msg + ': {}'.format(adversarial_example))
     else:
         # Execute face recognition.
         model = recognition.prepare_test()
@@ -175,10 +140,11 @@ if __name__ == '__main__':
                 if predict_image.shape[0] < preparation.pixel_size:
                     continue
                 predict_image = cv2.resize(predict_image, (preparation.pixel_size, preparation.pixel_size))
+                predict_image2 = cv2.resize(image, (preparation.pixel_size, preparation.pixel_size))
 
                 # Save image.
                 file_name = os.path.join(preparation.dataset_path, 'tmp_face.jpg')
-                cv2.imwrite(file_name, predict_image)
+                cv2.imwrite(file_name, predict_image2)
 
                 # Predict face.
                 results = recognition.execute_test(model, file_name)
