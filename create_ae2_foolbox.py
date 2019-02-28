@@ -156,12 +156,12 @@ if __name__ == "__main__":
         # Specify the target label.
         for idx2, target_class in enumerate(reversed(range(adv.nb_classes))):
             # Indicate target label.
-            criterion = TargetClassProbability(target_class, p=0.9)
+            criterion = TargetClassProbability(label, p=0.9)
             attack = foolbox.attacks.LBFGSAttack(model=fool_model, criterion=criterion)
-            utility.print_message(OK, 'Run the attack: target={}.{}'.format(target_class, adv.classes[target_class]))
+            utility.print_message(OK, 'Run the attack: target={}.{}'.format(label, adv.classes[label]))
 
             # Run the attack.
-            adversarial = attack(origin_image, label=label)
+            adversarial = attack(origin_image, label=label, unpack=False)
 
             # Save and show adversarial examples.
             utility.print_message(OK, 'Show the images.')
@@ -172,16 +172,12 @@ if __name__ == "__main__":
 
             plt.subplot(1, 3, 2)
             plt.title('Difference')
-            difference = adversarial - origin_image
+            difference = adversarial.image - origin_image
             plt.imshow(difference / abs(difference).max() * 0.2 + 0.5)
 
             plt.subplot(1, 3, 3)
             plt.title('Adversarial')
-            plt.imshow(adversarial / 255)
-
-            # Save.
-            plt.imsave(os.path.join(adv.adversarial_path, 'Adversarial_{}-{}.jpg'.format(label, idx2)), adversarial / 255)
-            plt.savefig(os.path.join(adv.adversarial_path, 'Compare_{}-{}.jpg'.format(label, idx2)))
+            plt.imshow(adversarial.image / 255)
 
             # Prediction.
             # Original model.
@@ -190,7 +186,7 @@ if __name__ == "__main__":
             top_index = pred.argsort()[-1:][::-1]
             orig_pred_label = adv.classes[top_index[0]]
             orig_pred_prob = pred[top_index[0]]
-            pred = keras_model.predict(np.expand_dims(adversarial / 255, axis=0))[0]
+            pred = keras_model.predict(np.expand_dims(adversarial.image / 255, axis=0))[0]
             top_index = pred.argsort()[-1:][::-1]
             adv_pred_label = adv.classes[top_index[0]]
             adv_pred_prob = pred[top_index[0]]
@@ -203,9 +199,15 @@ if __name__ == "__main__":
             pred_index = int(np.argmax(fool_model.predictions(origin_image)))
             orig_pred_label = adv.classes[pred_index]
             orig_pred_prob = foolbox.utils.softmax(fool_model.predictions(origin_image))[pred_index]
-            pred_index = int(np.argmax(fool_model.predictions(adversarial)))
+            pred_index = int(np.argmax(fool_model.predictions(adversarial.image)))
             adv_pred_label = adv.classes[pred_index]
-            adv_pred_prob = foolbox.utils.softmax(fool_model.predictions(adversarial))[pred_index]
+            adv_pred_prob = foolbox.utils.softmax(fool_model.predictions(adversarial.image))[pred_index]
             msg = 'Original: {}/{:.1f}%, Adversarial: {}/{:.1f}%'.format(orig_pred_label, orig_pred_prob * 100,
                                                                          adv_pred_label, adv_pred_prob * 100)
             utility.print_message(OK, msg)
+
+            # Save.
+            file_name = 'Adversarial_{}.{}---{}.{}.jpg'.format(idx1, orig_pred_label, idx2, adv_pred_label)
+            plt.imsave(os.path.join(adv.adversarial_path, file_name), adversarial.image / 255)
+            file_name = 'Compare_{}.{}---{}.{}.jpg'.format(idx1, orig_pred_label, idx2, adv_pred_label)
+            plt.savefig(os.path.join(adv.adversarial_path, file_name))
