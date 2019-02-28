@@ -63,7 +63,11 @@ class Adversarial:
 
             # Adversarial examples path.
             self.adversarial_path = os.path.join(self.full_path, config['Adversarial']['adversarial_path'])
+            if os.path.exists(self.adversarial_path) is False:
+                os.mkdir(self.adversarial_path)
             self.origin_image_path = os.path.join(self.full_path, config['Adversarial']['origin_adversarial'])
+            if os.path.exists(self.origin_image_path) is False:
+                os.mkdir(self.origin_image_path)
         except Exception as e:
             self.utility.print_message(FAIL, 'Reading config.ini is failure : {}'.format(e))
             sys.exit(1)
@@ -128,16 +132,19 @@ if __name__ == "__main__":
     utility = Utilty()
     adv = Adversarial(utility)
 
-    # Instantiate model
+    # Load existing Keras model.
     keras.backend.set_learning_phase(0)
-    kmodel = adv.prepare_test()
-    # preprocessing = (np.array([104, 116, 123]), 1)
-    # fmodel = foolbox.models.KerasModel(kmodel, bounds=(0, 255), preprocessing=preprocessing)
-    fmodel = foolbox.models.KerasModel(kmodel, bounds=(0, 255))
+    keras_model = adv.prepare_test()
+
+    # Exchange Keras model to foolbox model.
+    fool_model = foolbox.models.KerasModel(keras_model, bounds=(0, 255))
 
     # Generate adversarial examples.
     target_list = os.listdir(adv.origin_image_path)
-    for label, target_origin_image in enumerate(target_list):
+    for idx1, target_origin_image in enumerate(target_list):
+        # Extract label of target image.
+        label = int(target_origin_image.split('.')[0])
+
         # Load target image.
         utility.print_message(OK, '{}/{} Load original image: {} = {}'.format(label + 1,
                                                                               len(target_list),
@@ -148,25 +155,13 @@ if __name__ == "__main__":
 
         # Specify the target label.
         for idx2, target_class in enumerate(reversed(range(adv.nb_classes))):
-            # Run the attack.
+            # Indicate target label.
             criterion = TargetClassProbability(target_class, p=0.9)
+            attack = foolbox.attacks.LBFGSAttack(model=fool_model, criterion=criterion)
             utility.print_message(OK, 'Run the attack: target={}.{}'.format(target_class, adv.classes[target_class]))
-            attack = foolbox.attacks.LBFGSAttack(model=fmodel, criterion=criterion)
-            adversarial = attack(origin_image, label=label)
 
-            # Prediction of default model.
-            '''
-            copy_image = copy.deepcopy(origin_image)
-            copy_image = np.expand_dims(copy_image, axis=0)
-            copy_image = copy_image / 255.0
-            pred = kmodel.predict(copy_image)[0]
-            top_indices = pred.argsort()[-1:][::-1]
-            results = [(adv.classes[i], pred[i]) for i in top_indices]
-            pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
-            pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[target_class]
-            utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label,
-                                                                                             pred_prob * 100))
-            '''
+            # Run the attack.
+            adversarial = attack(origin_image, label=label)
 
             # Save and show adversarial examples.
             utility.print_message(OK, 'Show the images.')
@@ -188,13 +183,29 @@ if __name__ == "__main__":
             plt.imsave(os.path.join(adv.adversarial_path, 'Adversarial_{}-{}.jpg'.format(label, idx2)), adversarial / 255)
             plt.savefig(os.path.join(adv.adversarial_path, 'Compare_{}-{}.jpg'.format(label, idx2)))
 
-            # Get result of prediction.
-            x = np.expand_dims(adversarial, axis=0)
-            pred = kmodel.predict(x / 255)[0]
-            top = 1
-            top_indices = pred.argsort()[-top:][::-1]
-            results = [(adv.classes[i], pred[i]) for i in top_indices]
-            pred_label = adv.classes[int(np.argmax(fmodel.predictions(adversarial)))]
-            pred_prob = foolbox.utils.softmax(fmodel.predictions(adversarial))[target_class]
-            utility.print_message(OK, 'Prediction result for adversarial: {}/{:.1f}%'.format(pred_label,
-                                                                                             pred_prob * 100))
+            # Prediction.
+            # Original model.
+            utility.print_message(NOTE, 'Prediction of original model.')
+            pred = keras_model.predict(np.expand_dims(origin_image / 255, axis=0))[0]
+            top_index = pred.argsort()[-1:][::-1]
+            orig_pred_label = adv.classes[top_index[0]]
+            orig_pred_prob = pred[top_index[0]]
+            pred = keras_model.predict(np.expand_dims(adversarial / 255, axis=0))[0]
+            top_index = pred.argsort()[-1:][::-1]
+            adv_pred_label = adv.classes[top_index[0]]
+            adv_pred_prob = pred[top_index[0]]
+            msg = 'Original: {}/{:.1f}%, Adversarial: {}/{:.1f}%'.format(orig_pred_label, orig_pred_prob * 100,
+                                                                         adv_pred_label, adv_pred_prob * 100)
+            utility.print_message(OK, msg)
+
+            # Foolbox model.
+            utility.print_message(NOTE, 'Prediction of foolbox model.')
+            pred_index = int(np.argmax(fool_model.predictions(origin_image)))
+            orig_pred_label = adv.classes[pred_index]
+            orig_pred_prob = foolbox.utils.softmax(fool_model.predictions(origin_image))[pred_index]
+            pred_index = int(np.argmax(fool_model.predictions(adversarial)))
+            adv_pred_label = adv.classes[pred_index]
+            adv_pred_prob = foolbox.utils.softmax(fool_model.predictions(adversarial))[pred_index]
+            msg = 'Original: {}/{:.1f}%, Adversarial: {}/{:.1f}%'.format(orig_pred_label, orig_pred_prob * 100,
+                                                                         adv_pred_label, adv_pred_prob * 100)
+            utility.print_message(OK, msg)
