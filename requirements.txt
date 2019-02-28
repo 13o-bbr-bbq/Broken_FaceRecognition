@@ -4,4 +4,6 @@ foolbox==1.8.0
 matplotlib==2.0.2
 numpy==1.16.1
 opencv-python==4.0.0.21
+pycrypto==2.6.1
 tensorflow==1.8.0
+Pillow==5.4.1
