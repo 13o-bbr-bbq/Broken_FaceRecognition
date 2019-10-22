@@ -64,6 +64,6 @@ if __name__ == "__main__":
                 adv_image = random_adv(copy_image, face, pixel_num)
 
                 # Save Adversarial Examples.
-                save_path = os.path.join(out_path, 'adv_' + str(idx) + '_' + sys.argv[1])
+                save_path = os.path.join(out_path, 'adv_' + str(idx) + '_' + os.path.basename(sys.argv[1]))
                 cv2.imwrite(save_path, adv_image)
                 print('Save adversarial example: {}'.format(save_path))
