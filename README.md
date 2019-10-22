@@ -167,7 +167,7 @@ This mode'll execute test of Adversarial Examples using examples in the `adversa
    * matplotlib==2.0.2
    * numpy==1.16.1
    * opencv-python==4.0.0.21
-   * Pillow==5.4.1
+   * Pillow==6.2.1
    * tensorflow==1.8.0
 
 ## License
