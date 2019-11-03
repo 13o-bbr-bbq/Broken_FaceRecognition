@@ -37,13 +37,14 @@ The **default model** has learned some faces of **[VGGFACE2](http://zeus.robots.
 ```
 ./broken_face_recognition.py
 usage:
-    ./broken_face_recognition.py [-g <label_name>] [-c] [-t] [-a]
-    ./broken_face_recognition.py -h | --help
+    {f} [-g --label_name=<label>] [-c] [-t] [-a] [-r --rec_file_name=<path>]
+    {f} -h | --help
 options:
     -g   Optional : Gather your face images.
     -c   Optional : Create dataset that train and test.
     -t   Optional : Train face recognition model.
     -a   Optional : Adversarial Examples test.
+    -r   Optional : Record your appearance for Deep Fake.
     -h --help     Show this help message and exit.
 ```
 
@@ -63,12 +64,12 @@ When the **recognition rate exceeds the threshold value**, the string "**Unlock*
 |If you want to change the threshold value, please edit `threshold` value in the `config.ini`.|
 
 ### How to register new face images to the system.  
-#### 1. Gather your face images. 
+#### 1. Gather your face images.
 ```
-PS C:\Broken_FaceRecognition> python broken_face_recognition.py -g "Any label name"
+PS C:\Broken_FaceRecognition> python broken_face_recognition.py -g --label_name="Any label name"
 ```
 
-This system captures your faces using equiped camera of your PC per `cap_wait_time` (ms).  
+This system captures your faces using equipped camera of your PC per `cap_wait_time` (ms).  
 The captured face images is stored in the "Any label name" directory under the `original_image`.  
 
 ```
@@ -109,7 +110,7 @@ test
 PS C:\Broken_FaceRecognition> python broken_face_recognition.py -t
 ```
 
-This system learns the features of numerous face images using trainning data.  
+This system learns the features of numerous face images using training data.  
 And, the learned result is stored on the `model` directory under the `dataset`.  
 
 ```
@@ -126,7 +127,7 @@ finetuning.h5
 PS C:\Broken_FaceRecognition> python create_ae.py "original image path"
 ```
 
-This mode'll create Adversarial Examples based on original image.  
+This mode will create Adversarial Examples based on original image.  
 The created adversarial examples is placed `adversarial_examples` directory.  
 
 ```
@@ -163,12 +164,12 @@ This mode'll execute test of Adversarial Examples using examples in the `adversa
    * Python 3.6.8
    * docopt==0.6.2
    * foolbox==1.8.0
-   * Keras==2.2.4
-   * matplotlib==2.0.2
+   * Keras==2.2.5
+   * matplotlib==3.0.3
    * numpy==1.16.1
    * opencv-python==4.0.0.21
    * Pillow==6.2.1
-   * tensorflow==1.8.0
+   * tensorflow>=1.12.1
 
 ## License
 [Apache License 2.0](https://github.com/13o-bbr-bbq/Broken_FaceRecognition/blob/master/LICENSE)
