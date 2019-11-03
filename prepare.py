@@ -15,7 +15,7 @@ WARNING = 'warn'  # [!]
 NONE = 'none'     # No label.
 
 
-# Face prediction.
+# Preparation.
 class Preparation:
     def __init__(self, utility):
         # Read config.ini.

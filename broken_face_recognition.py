@@ -7,6 +7,7 @@ from docopt import docopt
 from util import Utilty
 from prepare import Preparation
 from predict import Recognition
+from recorder_webcam import Record
 
 # Type of printing.
 OK = 'ok'         # [*]
@@ -18,30 +19,16 @@ NONE = 'none'     # No label.
 # Define command option.
 __doc__ = """{f}
 usage:
-    {f} [-g <label_name>] [-c] [-t] [-a]
+    {f} [-g --label_name=<label>] [-c] [-t] [-a] [-r --rec_file_name=<path>]
     {f} -h | --help
 options:
     -g   Optional : Gather your face images.
     -c   Optional : Create dataset that train and test.
     -t   Optional : Train face recognition model.
     -a   Optional : Adversarial Examples test.
+    -r   Optional : Record your appearance for Deep Fake.
     -h --help     Show this help message and exit.
 """.format(f=__file__)
-
-
-# Parse command arguments.
-def command_parse(utility):
-    utility.write_log(20, '[In] Parse command options [{}].'.format(os.path.basename(__file__)))
-
-    args = docopt(__doc__)
-    opt_gather = args['-g']
-    opt_label_name = args['<label_name>']
-    opt_create = args['-c']
-    opt_train = args['-t']
-    opt_adversarial = args['-a']
-
-    utility.write_log(20, '[Out] Parse command options [{}].'.format(os.path.basename(__file__)))
-    return opt_gather, opt_label_name, opt_create, opt_train, opt_adversarial
 
 
 if __name__ == '__main__':
@@ -52,7 +39,14 @@ if __name__ == '__main__':
     utility.write_log(20, '[In] Broken Face recognition [{}].'.format(file_name))
 
     # Get command arguments.
-    opt_gather, opt_label_name, opt_create, opt_train, opt_adversarial = command_parse(utility)
+    args = docopt(__doc__)
+    opt_gather = args['-g']
+    opt_label_name = args['--label_name']
+    opt_create = args['-c']
+    opt_train = args['-t']
+    opt_adversarial = args['-a']
+    opt_record = args['-r']
+    opt_rec_file_name = args['--rec_file_name']
 
     # Read config.ini.
     config = configparser.ConfigParser()
@@ -76,6 +70,7 @@ if __name__ == '__main__':
     # Create instance.
     preparation = Preparation(utility)
     recognition = Recognition(utility)
+    record = Record(utility)
 
     if opt_train:
         # Train model.
@@ -113,6 +108,9 @@ if __name__ == '__main__':
             prob = results[0][1] * 100
             msg = '{}/{} {} ({:.1f}%).'.format(idx + 1, len(target_list), results[0][0], prob)
             utility.print_message(OK, msg + ': {}'.format(adversarial_example))
+    elif opt_record:
+        # Recording.
+        record.record(opt_rec_file_name)
     else:
         # Execute face recognition.
         model = recognition.prepare_test()
