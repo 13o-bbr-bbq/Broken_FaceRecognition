@@ -1,8 +1,8 @@
 docopt==0.6.2
 foolbox==1.8.0
-Keras==2.2.5
-matplotlib==3.0.3
-numpy==1.16.1
-opencv-python==4.0.0.21
-Pillow>=6.2.2
-tensorflow>=1.12.1
+Keras
+matplotlib
+numpy
+opencv-python
+Pillow
+tensorflow
